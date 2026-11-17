@@ -6,6 +6,15 @@ const FINO = matchMedia("(hover:hover) and (pointer:fine)").matches;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const svgU = id => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#${id}"/></svg>`;
+/* computadoras de bajos recursos: menos partículas, sin figura animada de fondo ni scroll suave */
+let LIGERO = (navigator.hardwareConcurrency || 8) <= 2 || (navigator.deviceMemory || 8) <= 4;
+if (LIGERO) document.documentElement.classList.add("ligero");
+const ajustesLigero = [];
+function bajarCalidad() {
+  if (LIGERO) return; LIGERO = true; document.documentElement.classList.add("ligero");
+  if (lenis) { try { lenis.destroy(); } catch (e) {} lenis = null; document.documentElement.classList.remove("lenis"); }
+  ajustesLigero.forEach(f => f());
+}
 const waCon = t => "https://wa.me/527821237103?text=" + encodeURIComponent(t);
 const pesos = n => "$" + Math.round(n).toLocaleString("es-MX");
 
@@ -35,7 +44,7 @@ function descifrar(el, final, dur = 900) {
 
 /* ---------- desplazamiento suave ---------- */
 let lenis = null;
-if (!QUIETO && FINO && window.Lenis) {
+if (!QUIETO && FINO && !LIGERO && window.Lenis) {
   try {
     lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true });
     document.documentElement.classList.add("lenis");
@@ -62,17 +71,18 @@ function medirLetras(cont, refTop) {
 function intro() {
   if (QUIETO || !window.crearIntro) { nombre.classList.add("ver"); capa.style.display = "none"; return; }
   const ctx = capa.getContext("2d");
-  let W, H, dpr, off, oc, motor, itemsA, itemsB, anchoAnt = 0;
+  let W, H, dpr, off, oc, motor, itemsA, itemsB, anchoAnt = 0, caja;
   const avance = () => cl(scrollY / (hero.offsetHeight * .55));
   function armar() {
-    dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; anchoAnt = W;
+    dpr = LIGERO ? 1 : Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; anchoAnt = W;
     capa.width = W * dpr; capa.height = H * dpr; off = document.createElement("canvas"); off.width = capa.width; off.height = capa.height; oc = off.getContext("2d");
     const hr = hero.getBoundingClientRect();
     itemsA = medirLetras(nombre, hr.top);            /* grandes: y medida desde el inicio de la página */
     itemsB = medirLetras(logoMini, 0);               /* chicas: fijas en la pantalla */
-    const fs0 = parseFloat(getComputedStyle($(".le", nombre)).fontSize), paso = Math.max(2, Math.round(fs0 / (W < 700 ? 34 : 56)));
+    const fs0 = parseFloat(getComputedStyle($(".le", nombre)).fontSize), paso = Math.max(2, Math.round(fs0 / (LIGERO ? (W < 700 ? 24 : 32) : (W < 700 ? 34 : 56))));
     const hH = hero.offsetHeight;
-    motor = crearIntro(W, H, puntosTexto(W, Math.max(H, hH), itemsA, paso, true), puntosTexto(W, H, itemsB, 2, true), { polvo: "rgba(10,10,10,.55)", nPolvo: W < 700 ? 140 : 260 });
+    motor = crearIntro(W, H, puntosTexto(W, Math.max(H, hH), itemsA, paso, true), puntosTexto(W, H, itemsB, 2, true), { polvo: "rgba(10,10,10,.55)", nPolvo: LIGERO ? 60 : (W < 700 ? 140 : 260) });
+    caja = itemsA.reduce((c, it) => ({ x0: Math.min(c.x0, it.x), x1: Math.max(c.x1, it.x + 200), y0: Math.min(c.y0, it.base - 260), y1: Math.max(c.y1, it.base + 60) }), { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9 });
   }
   armar();
   const t0 = performance.now(); let prox = 0, glHasta = 0, listo = false;
@@ -83,9 +93,13 @@ function intro() {
       if (!listo) { listo = true; if (s >= .05) motor.colocar(s, sy); }
       if (t > prox) { glHasta = s < .5 ? t + .16 : 0; prox = t + 4 + Math.random() * 4; }
       /* en reposo con el nombre chico y el cursor lejos, no hace falta redibujar */
-      const lm = logoMini.getBoundingClientRect(), cerca = ratonX > lm.left - 80 && ratonX < lm.right + 80 && ratonY < lm.bottom + 80;
-      if (!(s >= 1 && motor.quietud < .01 && !cerca && cuadro.sAnt >= 1)) motor.vivir(ctx, off, oc, t, dpr, s, sy, ratonX, ratonY, t < glHasta, itemsA, itemsB);
-      cuadro.sAnt = s;
+      /* solo redibuja si algo se mueve: scroll, cursor cerca, glitch o partículas en camino */
+      let cerca;
+      if (s >= 1) { const lm = logoMini.getBoundingClientRect(); cerca = ratonX > lm.left - 80 && ratonX < lm.right + 80 && ratonY < lm.bottom + 80; }
+      else cerca = ratonX > caja.x0 - 140 && ratonX < caja.x1 + 140 && ratonY + sy > caja.y0 - 140 && ratonY + sy < caja.y1 + 140;
+      const gl = t < glHasta, activo = gl || cuadro.glAnt || motor.quietud > .008 || s !== cuadro.sAnt || cerca || cuadro.forzar;
+      if (activo && (s < 1 || sy < hero.offsetHeight * 3 || cerca || s !== cuadro.sAnt || motor.quietud > .008)) { motor.vivir(ctx, off, oc, t, dpr, s, sy, ratonX, ratonY, gl, itemsA, itemsB); cuadro.forzar = false; }
+      cuadro.sAnt = s; cuadro.glAnt = gl;
     }
     requestAnimationFrame(cuadro);
   };
@@ -94,7 +108,8 @@ function intro() {
   document.addEventListener("pointerleave", () => { ratonX = ratonY = -9999; });
   addEventListener("touchend", () => setTimeout(() => { ratonX = ratonY = -9999; }, 250), { passive: true });
   hero.addEventListener("pointerdown", e => { if (avance() < .3 && listo) motor.explotar(e.clientX, e.clientY); });
-  let tR = 0; addEventListener("resize", () => { clearTimeout(tR); tR = setTimeout(() => { if (Math.abs(innerWidth - anchoAnt) < 40 && Math.abs(innerHeight - H) < 160) return; armar(); listo = true; motor.colocar(avance(), scrollY); }, 200); });
+  ajustesLigero.push(() => { armar(); listo = true; motor.colocar(avance(), scrollY); cuadro.forzar = true; });
+  let tR = 0; addEventListener("resize", () => { clearTimeout(tR); tR = setTimeout(() => { if (Math.abs(innerWidth - anchoAnt) < 40 && Math.abs(innerHeight - H) < 160) return; armar(); listo = true; motor.colocar(avance(), scrollY); cuadro.forzar = true; }, 200); });
 }
 Promise.race([document.fonts ? Promise.all([document.fonts.load("800 100px Syne"), document.fonts.load("italic 400 100px Fraunces")]).then(() => document.fonts.ready) : Promise.resolve(), new Promise(r => setTimeout(r, 1200))])
   .then(() => requestAnimationFrame(intro));
@@ -256,15 +271,19 @@ if (FINO && !QUIETO) $$(".mag").forEach(m => {
 /* ---------- menú: se descifra al pasar el mouse ---------- */
 $$("[data-rev] span").forEach(s => { const f = s.textContent; s.parentElement.addEventListener("pointerenter", () => descifrar(s, f, 420)); });
 
-/* ---------- cursor que acompaña ---------- */
+/* ---------- cursor propio: flecha que se inclina al moverte y se vuelve mano en botones ---------- */
 const cursor = $(".cursor");
-let cx = 0, cy = 0, ctx2 = 0, cty = 0;
+let curX = -100, curY = -100, curAnt = -100, curAng = 0;
 if (FINO && !QUIETO) {
-  addEventListener("pointermove", e => { if (!cursor.classList.contains("on")) { cx = e.clientX; cy = e.clientY; } ctx2 = e.clientX; cty = e.clientY; cursor.classList.add("on");
-    const ver = e.target.closest(".fila button"), link = e.target.closest("a, button, summary, input, select, textarea, .hero");
-    cursor.classList.toggle("ver", !!ver); cursor.classList.toggle("link", !ver && !!link); }, { passive: true });
+  addEventListener("pointermove", e => { curX = e.clientX; curY = e.clientY; cursor.classList.add("on");
+    const t = e.target, texto = t.closest("input, textarea"), ver = t.closest(".fila button"), mano = t.closest("a, button, summary, label, select, [data-caso]");
+    cursor.classList.toggle("oculto", !!texto); cursor.classList.toggle("ver", !!ver); cursor.classList.toggle("mano", !!mano && !texto); }, { passive: true });
   document.addEventListener("pointerleave", () => cursor.classList.remove("on"));
-  $("span", cursor).textContent = "ver";
+  addEventListener("pointerdown", () => cursor.classList.add("click"));
+  addEventListener("pointerup", () => cursor.classList.remove("click"));
+  /* dentro de las ventanas se usa el cursor normal */
+  new MutationObserver(() => document.documentElement.classList.toggle("dlg", $$("dialog[open]").length > 0))
+    .observe(document.body, { subtree: true, attributes: true, attributeFilter: ["open"] });
 }
 
 /* ================= APARICIONES ================= */
@@ -303,8 +322,17 @@ medirProceso(); addEventListener("resize", medirProceso);
 if (!horizontal || QUIETO) { const obP = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("on", e.isIntersecting)), { rootMargin: "-40% 0px -40% 0px" }); pasos.forEach(li => obP.observe(li)); }
 
 /* ================= BUCLE ÚNICO ================= */
-const barra = $(".top"), progreso = $(".progreso i"), correoLe = $$(".correo .le"), pintas = $$(".pinta");
+const barra = $(".top"), progreso = $(".progreso i"), correoLe = $$(".correo .le"), pintas = $$(".pinta"), correo = $(".correo");
+/* cada efecto solo trabaja cuando su sección está en pantalla */
+const enVista = new Map();
+const obV = new IntersectionObserver(es => es.forEach(e => enVista.set(e.target, e.isIntersecting)), { rootMargin: "200px 0px" });
+[marq, marco, $(".pila"), proc, correo, lista, ...pintas].forEach(el => { enVista.set(el, false); obV.observe(el); });
+const visto = el => enVista.get(el);
+let reelK = -1, tFps = 0, nFps = 0, sumFps = 0, ultNow = 0;
 function bucle(now) {
+  /* si los cuadros tardan mucho al inicio, baja la calidad sola */
+  if (!LIGERO && ultNow && now > 1500 && now < 6500) { sumFps += now - ultNow; nFps++; if (nFps > 60 && sumFps / nFps > 26) bajarCalidad(); }
+  ultNow = now;
   if (lenis) lenis.raf(now);
   const y = scrollY, dy = y - ultY, vh = innerHeight; ultY = y;
   progreso.style.transform = `scaleX(${cl(y / (document.documentElement.scrollHeight - vh))})`;
@@ -312,29 +340,32 @@ function bucle(now) {
     /* franja: velocidad y dirección según el scroll */
     if (Math.abs(dy) > .5) mV = cl(mV + Math.sign(dy) * Math.min(Math.abs(dy), 40) * .04, -6, 6);
     mV += ((Math.sign(mV) || 1) - mV) * .04;
-    const w = marq.scrollWidth / 4; mX -= mV * (innerWidth < 700 ? .9 : 1.4); if (mX < -w) mX += w; if (mX > 0) mX -= w;
-    marq.style.transform = `translate3d(${mX}px,0,0) skewX(${cl(-dy * .25, -10, 10)}deg)`;
-    rayX += mV * .6; rayas.style.backgroundPosition = `${rayX}px 0`;
-    /* showreel: se abre desde el centro */
-    const r = marco.getBoundingClientRect(), k = cl((vh - r.top) / (vh * .9)), e = 1 - Math.pow(1 - k, 3);
-    marco.style.setProperty("--ci", (12 * (1 - e)).toFixed(2) + "%"); marco.style.setProperty("--cl", (22 * (1 - e)).toFixed(2) + "%");
-    marco.style.setProperty("--cr", (28 - 6 * e).toFixed(1) + "px"); marco.style.setProperty("--vs", (1.25 - .25 * e).toFixed(3));
+    if (visto(marq)) { const w = marq._w || (marq._w = marq.scrollWidth / 4); mX -= mV * (innerWidth < 700 ? .9 : 1.4); if (mX < -w) mX += w; if (mX > 0) mX -= w;
+      marq.style.transform = `translate3d(${mX.toFixed(1)}px,0,0) skewX(${LIGERO ? 0 : cl(-dy * .25, -10, 10).toFixed(1)}deg)`;
+      rayX += mV * .6; rayas.style.backgroundPosition = `${rayX.toFixed(1)}px 0`; }
+    /* showreel: se abre desde el centro (solo mientras cambia) */
+    if (visto(marco)) { const r = marco.getBoundingClientRect(), k = Math.round(cl((vh - r.top) / (vh * .9)) * 200) / 200;
+      if (k !== reelK) { reelK = k; const e = 1 - Math.pow(1 - k, 3);
+        marco.style.setProperty("--ci", (12 * (1 - e)).toFixed(2) + "%"); marco.style.setProperty("--cl", (22 * (1 - e)).toFixed(2) + "%");
+        marco.style.setProperty("--cr", (28 * (1 - e)).toFixed(1) + "px"); marco.style.setProperty("--vs", (1.25 - .25 * e).toFixed(3)); } }
     /* hojas: la de atrás se encoge cuando llega la siguiente */
-    hojas.forEach((h, i) => { const sig = hojas[i + 1]; if (!sig) return; const a = h.getBoundingClientRect(), b = sig.getBoundingClientRect();
-      const p = cl(1 - (b.top - a.top) / a.height); h.style.transform = `scale(${1 - p * .07}) translateY(${-p * 10}px)`; h.style.filter = `brightness(${1 - p * .25})`; });
+    if (visto($(".pila")) && dy !== 0) hojas.forEach((h, i) => { const sig = hojas[i + 1]; if (!sig) return; const a = h.getBoundingClientRect(), b = sig.getBoundingClientRect();
+      const p = cl(1 - (b.top - a.top) / a.height); h.style.transform = `scale(${(1 - p * .07).toFixed(4)}) translateY(${(-p * 10).toFixed(1)}px)`; h.style.opacity = (1 - p * .35).toFixed(3); });
     /* proceso horizontal */
-    if (horizontal) { const pr = proc.getBoundingClientRect(), p = cl(-pr.top / Math.max(1, proc.offsetHeight - vh));
+    if (horizontal && visto(proc)) { const pr = proc.getBoundingClientRect(), p = cl(-pr.top / Math.max(1, proc.offsetHeight - vh));
       pista.style.transform = `translate3d(${-p * distancia}px,0,0)`; procBarra.style.transform = `scaleX(${p})`;
       const act = Math.round(p * (pasos.length - 1)); pasos.forEach((li, i) => li.classList.toggle("on", i <= act)); }
     /* sobre mí: el texto se pinta palabra por palabra */
-    pintas.forEach(pi => { const r2 = pi.getBoundingClientRect(), p = cl((vh * .88 - r2.top) / (r2.height + vh * .3)), ws = pi._w || (pi._w = $$(".w", pi)), n = Math.round(p * ws.length);
+    pintas.forEach(pi => { if (!visto(pi)) return; const r2 = pi.getBoundingClientRect(), p = cl((vh * .88 - r2.top) / (r2.height + vh * .3)), ws = pi._w || (pi._w = $$(".w", pi)), n = Math.round(p * ws.length);
       if (pi._n !== n) { ws.forEach((w, i) => w.classList.toggle("on", i < n)); pi._n = n; } });
     /* correo: las letras suben en ola */
-    const rc = $(".correo").getBoundingClientRect(), pc = cl((vh - rc.top) / (vh * .7));
-    correoLe.forEach((le, i) => { const q = cl(pc * 1.8 - i / correoLe.length); le.style.transform = `translateY(${(1 - q) * 70}%) rotate(${(1 - q) * 12}deg)`; le.style.opacity = .15 + q * .85; });
+    if (visto(correo)) { const rc = correo.getBoundingClientRect(), pc = Math.round(cl((vh - rc.top) / (vh * .7)) * 300) / 300;
+    if (pc !== correo._p) { correo._p = pc; correoLe.forEach((le, i) => { const q = cl(pc * 1.8 - i / correoLe.length); le.style.transform = `translateY(${(1 - q) * 70}%) rotate(${(1 - q) * 12}deg)`; le.style.opacity = .15 + q * .85; }); } }
     /* vista previa y cursor */
-    if (FINO) { vx += (vtx - vx) * .14; vy += (vty - vy) * .14; vista.style.translate = `${vx}px ${vy}px`; vista.style.rotate = `${cl((vtx - vx) * .06, -10, 10)}deg`;
-      cx += (ctx2 - cx) * .2; cy += (cty - cy) * .2; cursor.style.transform = `translate(${cx}px,${cy}px)`; }
+    if (FINO && visto(lista)) { vx += (vtx - vx) * .14; vy += (vty - vy) * .14; vista.style.translate = `${vx}px ${vy}px`; vista.style.rotate = `${cl((vtx - vx) * .06, -10, 10)}deg`;
+}
+    if (FINO && !LIGERO) { const v = curX - curAnt; curAnt = curX; curAng += (cl(v * 1.4, -28, 28) - curAng) * .18;
+      cursor.style.transform = `translate(${(curX - 4).toFixed(1)}px,${(curY - 3).toFixed(1)}px) rotate(${curAng.toFixed(1)}deg)`; }
   }
   requestAnimationFrame(bucle);
 }
@@ -345,16 +376,17 @@ requestAnimationFrame(bucle);
   const cv = $("canvas.obj"); if (!cv) return;
   const ctx = cv.getContext("2d"), off = document.createElement("canvas"), oc = off.getContext("2d"), TAU = Math.PI * 2;
   let W = 0, H = 0, dpr = 1, px = 0, py = 0, falla = 0, prox = 4, vivo = true, tx = 0, ty = 0;
-  const medir = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = off.width = W * dpr | 0; cv.height = off.height = H * dpr | 0; };
+  const medir = () => { dpr = 1; W = innerWidth; H = innerHeight; cv.width = off.width = W * dpr | 0; cv.height = off.height = H * dpr | 0; };
   const rot = ([x, y, z], a, b) => { let t = y * Math.cos(a) - z * Math.sin(a); z = y * Math.sin(a) + z * Math.cos(a); y = t;
     t = x * Math.cos(b) + z * Math.sin(b); z = -x * Math.sin(b) + z * Math.cos(b); x = t; return [x, y, z]; };
-  const NP = 200, HILOS = 6, RAD = .085, KN = .27;
+  const NP = 140, HILOS = 6, RAD = .085, KN = .27; let impar = false;
   const curva = u => [(Math.sin(u) + 2 * Math.sin(2 * u)) * KN, (Math.cos(u) - 2 * Math.cos(2 * u)) * KN, -Math.sin(3 * u) * KN * 1.2];
   const BASE = Array.from({ length: NP + 1 }, (_, i) => { const u = i / NP * TAU, p = curva(u), q = curva(u + .01);
     const T = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], tl = Math.hypot(...T); T.forEach((v, j) => T[j] = v / tl);
     let N = [T[1], -T[0], 0]; const nl = Math.hypot(...N) || 1; N = N.map(v => v / nl);
     const B = [T[1] * N[2] - T[2] * N[1], T[2] * N[0] - T[0] * N[2], T[0] * N[1] - T[1] * N[0]]; return { u, p, N, B }; });
   const dibujar = now => {
+    impar = !impar; if (impar && !LIGERO) { requestAnimationFrame(dibujar); return; } /* 30 cuadros por segundo bastan */
     const t = now / 1000;
     tx += (px - tx) * .06; ty += (py - ty) * .06;
     const ancho = W > 900, cx3 = ancho ? W * .72 : W / 2, cy3 = H / 2 + Math.sin(t * .9) * H * .03, S = Math.min(W, H) * (ancho ? .7 : .62), sc = scrollY * .0016, ra = t * .2 + sc * .6 + ty * .9, rb = t * .28 + sc + tx * 1.1;
@@ -377,10 +409,10 @@ requestAnimationFrame(bucle);
     if (!g) ctx.drawImage(off, 0, 0);
     else { const n = 10, h = cv.height / n;
       for (let i = 0; i < n; i++) { const sh = Math.random() < .3 ? (Math.random() - .5) * 30 * dpr : 0; ctx.drawImage(off, 0, i * h, cv.width, h, sh, i * h, cv.width, h); } }
-    if (!QUIETO && vivo) requestAnimationFrame(dibujar);
+    if (!QUIETO && vivo && !LIGERO) requestAnimationFrame(dibujar);
   };
-  medir(); addEventListener("resize", medir);
+  medir(); addEventListener("resize", () => { medir(); if (LIGERO) requestAnimationFrame(dibujar); });
   addEventListener("pointermove", e => { px = cl((e.clientX - W / 2) / W, -1, 1); py = cl((e.clientY - H / 2) / H, -1, 1); }, { passive: true });
-  document.addEventListener("visibilitychange", () => { const v = !document.hidden; if (v && !vivo) { vivo = true; requestAnimationFrame(dibujar); } vivo = v; });
+  document.addEventListener("visibilitychange", () => { const v = !document.hidden; if (v && !vivo && !LIGERO) { vivo = true; requestAnimationFrame(dibujar); } vivo = v; });
   requestAnimationFrame(dibujar);
 })();
