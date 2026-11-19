@@ -17,6 +17,7 @@ function bajarCalidad() {
 }
 const waCon = t => "https://wa.me/527821237103?text=" + encodeURIComponent(t);
 const pesos = n => "$" + Math.round(n).toLocaleString("es-MX");
+const rango = (a, b) => b ? `${pesos(a)} – ${pesos(b)}` : `Desde ${pesos(a)}`;
 
 /* ---------- partir textos ---------- */
 function letras(el, txt) { el.innerHTML = [...txt].map(c => `<span class="le">${c === " " ? "&nbsp;" : esc(c)}</span>`).join(""); }
@@ -48,7 +49,7 @@ if (!QUIETO && FINO && !LIGERO && window.Lenis) {
   try {
     lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true });
     document.documentElement.classList.add("lenis");
-    $$('a[href^="#"]').forEach(a => a.addEventListener("click", e => { const id = a.getAttribute("href"), t = $(id); if (!t) return;
+    $$('a[href^="#"]:not(.menu-links a)').forEach(a => a.addEventListener("click", e => { const id = a.getAttribute("href"), t = $(id); if (!t) return;
       e.preventDefault(); lenis.scrollTo(t, { offset: id === "#inicio" ? 0 : -70, duration: 1.3 }); }));
     new MutationObserver(() => { $$("dialog[open]").length ? lenis.stop() : lenis.start(); })
       .observe(document.body, { subtree: true, attributes: true, attributeFilter: ["open"] });
@@ -162,20 +163,20 @@ function abrirCaso(i) {
 
 /* ================= 6 · PRECIOS ================= */
 const PLANES = [
-  { nombre: "Presencia", para: "Para que te encuentren y te escriban.", min: 3500, max: 5000, tiempo: "2 a 3 semanas", mant: "desde $250/mes", incl: ["Una página con hasta 5 apartados: portada, servicios o carta, horario, ubicación y contacto", "Botón de WhatsApp con mensaje listo y mapa para llegar", "Vista previa con tu logo al compartir el enlace", "Alta en Google y candado de seguridad", "Los cambios los hago yo con el mantenimiento"] },
-  { nombre: "Con panel", para: "Para cambiar precios, horarios y fotos tú mismo.", min: 6500, max: 9500, tiempo: "3 a 5 semanas", mant: "desde $350/mes", rec: true, incl: ["Todo lo de Presencia", "Panel con tu propio usuario y contraseña", "Cambias textos, precios, horarios, fotos y promociones", "Historial para regresar a una versión anterior", "Una sesión para enseñarte a usarlo"] },
-  { nombre: "A la medida", para: "Reservaciones, eventos o algo especial para tu negocio.", min: 10000, max: 18000, tiempo: "5 a 8 semanas", mant: "desde $550/mes", incl: ["Todo lo de Con panel", "Un módulo hecho para tu negocio: reservaciones, citas, cartelera de eventos…", "Panel para administrarlo: confirmar, cancelar, bloquear horarios", "3 rondas de cambios durante el diseño", "Pago en tres partes"] }
+  { nombre: "Presencia", para: "Para que te encuentren y te escriban.", min: 3500, max: 5000, tiempo: "2 a 3 semanas", mant: "$250 al mes", incl: ["Una página con hasta 5 apartados: portada, servicios o carta, horario, ubicación y contacto", "Botón de WhatsApp con mensaje listo y mapa para llegar", "Vista previa con tu logo al compartir el enlace", "Alta en Google y candado de seguridad", "Los cambios los hago yo con el mantenimiento"] },
+  { nombre: "Con panel", para: "Para cambiar precios, horarios y fotos tú mismo.", min: 6500, max: 9500, tiempo: "3 a 5 semanas", mant: "$450 al mes", rec: true, incl: ["Todo lo de Presencia", "Panel con tu usuario y contraseña, incluido mientras tengas tu plan", "Cambias textos, precios, horarios, fotos y promociones", "Historial para regresar a una versión anterior", "Una sesión para enseñarte a usarlo"] },
+  { nombre: "A la medida", para: "Reservaciones, eventos o algo especial para tu negocio.", min: 12000, max: 0, tiempo: "5 a 8 semanas", mant: "desde $650 al mes", incl: ["Todo lo de Con panel", "Un módulo hecho para tu negocio: reservaciones, citas, cartelera de eventos…", "Panel para administrarlo: confirmar, cancelar, bloquear horarios", "3 rondas de cambios durante el diseño", "Pago en tres partes"] }
 ];
 $("#planes").innerHTML = PLANES.map((p, i) => `<article class="plan${p.rec ? " rec" : ""}" style="--d:${i * 140}ms">${p.rec ? `<span class="chip">El más completo para empezar</span>` : ""}
-  <h3>${esc(p.nombre)}</h3><p class="para">${esc(p.para)}</p><div class="precio" data-min="${p.min}" data-max="${p.max}">${pesos(p.min)} – ${pesos(p.max)}</div><p class="unico">pago único</p>
+  <h3>${esc(p.nombre)}</h3><p class="para">${esc(p.para)}</p><div class="precio" data-min="${p.min}" data-max="${p.max}">${rango(p.min, p.max)}</div><p class="unico">pago único</p>
   <div class="dd"><div><small>Entrega</small><b>${esc(p.tiempo)}</b></div><div><small>Después</small><b>${esc(p.mant)}</b></div></div>
   <ul>${p.incl.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
   <a class="btn ${p.rec ? "halo" : "borde"}" href="${waCon(`Hola Roberto, vi tu portafolio y me interesa el paquete ${p.nombre}. Te cuento de mi negocio:`)}" target="_blank" rel="noopener">${svgU("i-wa")}<span>Quiero este paquete</span></a></article>`).join("");
-$("#f-paq").insertAdjacentHTML("beforeend", PLANES.map(p => `<option>${esc(p.nombre)} (${pesos(p.min)} – ${pesos(p.max)})</option>`).join(""));
+$("#f-paq").insertAdjacentHTML("beforeend", PLANES.map(p => `<option>${esc(p.nombre)} (${rango(p.min, p.max).replace("Desde", "desde")})</option>`).join(""));
 /* los precios cuentan hacia arriba al aparecer */
 function contar(el) {
   const a = +el.dataset.min, b = +el.dataset.max; if (QUIETO) return; const t0 = performance.now();
-  const paso = now => { const k = cl((now - t0) / 1200), e = 1 - Math.pow(1 - k, 3); el.textContent = `${pesos(a * e)} – ${pesos(b * e)}`; if (k < 1) requestAnimationFrame(paso); };
+  const paso = now => { const k = cl((now - t0) / 1200), e = 1 - Math.pow(1 - k, 3); el.textContent = rango(a * e, b * e); if (k < 1) requestAnimationFrame(paso); };
   requestAnimationFrame(paso);
 }
 
@@ -190,16 +191,17 @@ $("#quiz").addEventListener("click", e => {
   $("#quiz .q-barra i").style.width = Math.min(100, (i + 1) / 3 * 100) + "%";
   setTimeout(() => { ps[i].classList.remove("on"); ps[i + 1].classList.add("on");
     if (i + 1 === 3) { const k = Math.max(qv[0] || 1, qv[1] || 1), p = PLANES[k - 1];
-      descifrar($("#q-nom"), p.nombre, 700); $("#q-txt").textContent = REC[k] + ` Va de ${pesos(p.min)} a ${pesos(p.max)} y tarda de ${p.tiempo}.`;
+      descifrar($("#q-nom"), p.nombre, 700); $("#q-txt").textContent = REC[k] + (p.max ? ` Va de ${pesos(p.min)} a ${pesos(p.max)}` : ` Va desde ${pesos(p.min)}`) + `, tarda de ${p.tiempo} y su mantenimiento cuesta ${p.mant}.`;
       $("#q-wa").href = waCon(`Hola Roberto, hice el cuestionario de tu página y me salió el paquete ${p.nombre}. ${qt ? "Sobre logo y fotos: " + qt + ". " : ""}Me gustaría platicarlo.`); } }, 260);
 });
 
 /* ================= 9 · PREGUNTAS ================= */
 const FAQ = [
-  ["¿Cuánto cuesta en total?", "Depende de lo que necesites: una página de presencia va de $3,500 a $5,000 y una con panel de $6,500 a $9,500. Antes de empezar te doy un precio cerrado por escrito. Aparte solo pagas tu dominio (entre $300 y $600 al año) y, si lo quieres, el mantenimiento mensual."],
+  ["¿Cuánto cuesta en total?", "Depende de lo que necesites: una página de presencia va de $3,500 a $5,000, una con panel de $6,500 a $9,500 y una a la medida desde $12,000. Antes de empezar te doy un precio cerrado por escrito. Aparte pagas tu dominio (entre $300 y $600 al año) y el mantenimiento mensual, desde $250. Los cambios fuera del plan cuestan $350 la hora."],
   ["¿Cuánto tarda?", "Entre 2 y 8 semanas según el paquete. La mayor parte del tiempo se va en diseñar y ajustar contigo hasta que quede como quieres. Ayuda mucho que me compartas pronto tus fotos, precios y textos."],
   ["¿Qué necesito darte?", "Tu logo si tienes, fotos de tu negocio y de lo que vendes, precios, horario, dirección y tus redes. Si no tienes buenas fotos o no sabes qué escribir, te ayudo a resolverlo."],
-  ["¿Puedo cambiar cosas después?", "Sí. Con el paquete Con panel cambias precios, horarios, fotos y textos tú mismo desde tu celular o computadora. Si tienes Presencia, me mandas el cambio por WhatsApp y lo hago yo con el mantenimiento."],
+  ["¿Puedo cambiar cosas después?", "Sí. Con el paquete Con panel cambias textos, precios, horarios y fotos tú mismo desde tu celular o computadora; el panel funciona mientras tengas tu plan de mantenimiento activo. Si tienes Presencia, me mandas el cambio por WhatsApp y lo hago yo con el mantenimiento. Secciones nuevas o cambios de diseño se cotizan aparte."],
+  ["¿Qué pasa si cancelo el mantenimiento?", "Tu contenido y tu dominio son tuyos. Si cancelas, te entrego tu página completa sin costo; solo deja de funcionar el panel, porque depende del servicio que yo mantengo."],
   ["¿Trabajas con negocios de otras ciudades?", "Sí. Todo se puede hacer a distancia: platicamos por WhatsApp o videollamada, te comparto los avances con un enlace y lo revisas desde tu celular."],
   ["Ya tengo Facebook, ¿para qué quiero una página?", "Facebook sirve mucho para publicar, pero ahí tus horarios y precios se pierden entre publicaciones y no siempre te encuentran en Google. La página junta todo en un solo lugar, siempre al día, y desde ahí enlazas tu Facebook."],
   ["¿Haces tiendas en línea o sistemas más grandes?", "Por ahora me enfoco en páginas para negocios. Para tiendas y refaccionarias estoy desarrollando Loseel, mi propio punto de venta. Si tienes una idea más grande, platiquemos y te digo con honestidad si puedo hacerla."]
@@ -232,7 +234,7 @@ function copiar(t) {
 }
 
 /* ---------- ventanas con salida suave ---------- */
-function cerrarDialogo(d) { if (!d.open || d.classList.contains("sale")) return; if (QUIETO || d.id === "visor") { d.close(); return; }
+function cerrarDialogo(d) { if (d && d.id === "menu") { cerrarMenu(); return; } if (!d.open || d.classList.contains("sale")) return; if (QUIETO || d.id === "visor") { d.close(); return; }
   d.classList.add("sale"); setTimeout(() => { d.classList.remove("sale"); d.close(); }, 280); }
 $$("dialog").forEach(d => d.addEventListener("cancel", e => { e.preventDefault(); cerrarDialogo(d); }));
 document.addEventListener("click", e => {
@@ -269,7 +271,6 @@ if (FINO && !QUIETO) $$(".mag").forEach(m => {
 });
 
 /* ---------- menú: se descifra al pasar el mouse ---------- */
-$$("[data-rev] span").forEach(s => { const f = s.textContent; s.parentElement.addEventListener("pointerenter", () => descifrar(s, f, 420)); });
 
 /* ---------- cursor propio: flecha que se inclina al moverte y se vuelve mano en botones ---------- */
 const cursor = $(".cursor");
@@ -296,17 +297,27 @@ $$("[data-tit], .rv, .fila, .plan, .limpia, .faq details, .form").forEach(el => 
 $$(".limpia").forEach((el, i) => el.style.setProperty("--d", (i * 140) + "ms"));
 if (QUIETO) $$("[data-tit=descifra]").forEach(el => el.textContent = el.getAttribute("aria-label"));
 
-/* sección actual tachada en el menú, con glitch */
-const nav = $(".nav"), links = $$("a", nav);
-let actual = "";
-const obS = new IntersectionObserver(es => es.forEach(e => {
-  if (!e.isIntersecting) return;
-  const id = ({ inicio: "", gana: "", proceso: "precios", preguntas: "precios" })[e.target.id] ?? e.target.id;
-  if (id === actual) return; actual = id;
-  links.forEach(a => a.classList.toggle("actual", a.getAttribute("href") === "#" + id));
-  nav.classList.remove("glitch"); void nav.offsetWidth; if (!QUIETO) nav.classList.add("glitch");
-}), { rootMargin: "-45% 0px -50% 0px" });
-$$("#inicio, #gana, #trabajos, #precios, #proceso, #sobre-mi, #preguntas, #contacto").forEach(s => obS.observe(s));
+/* ================= MENÚ: la L cursiva se dibuja en el botón y luego se abre ================= */
+const menuD = $("#menu"), botonM = $(".menu-b");
+let menuOcupado = false;
+function dibujarL() { if (QUIETO) return Promise.resolve(); return new Promise(ok => { botonM.classList.remove("dibuja-l"); void botonM.offsetWidth; botonM.classList.add("dibuja-l"); setTimeout(ok, 720); }); }
+function seccionActual() {
+  const y = innerHeight * .35; let act = "inicio";
+  $$(".menu-links a").forEach(a => { const s2 = $(a.getAttribute("href")); if (!s2) return; const r = s2.getBoundingClientRect(); if (r.top <= y && r.bottom > y) act = s2.id; });
+  $$(".menu-links a").forEach(a => { const on = a.getAttribute("href") === "#" + act; a.classList.toggle("actual", on); if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current"); });
+}
+botonM.addEventListener("click", () => {
+  if (menuOcupado || menuD.open) return; menuOcupado = true; seccionActual();
+  dibujarL().then(() => { menuD.showModal(); menuD.classList.add("glitch"); setTimeout(() => menuD.classList.remove("glitch"), 700); botonM.setAttribute("aria-expanded", "true"); menuOcupado = false; });
+});
+function cerrarMenu(destino) {
+  if (!menuD.open) return; menuD.classList.add("saliendo");
+  setTimeout(() => { menuD.close(); menuD.classList.remove("saliendo");
+    if (destino) { if (lenis) { lenis.start(); lenis.scrollTo(destino, { immediate: true, offset: destino.id === "inicio" ? 0 : -70 }); } else destino.scrollIntoView({ behavior: "instant" }); } }, QUIETO ? 0 : 280);
+}
+menuD.addEventListener("close", () => { botonM.setAttribute("aria-expanded", "false"); botonM.classList.remove("dibuja-l"); });
+menuD.addEventListener("click", e => { const a = e.target.closest("a[href^='#']"); if (!a) return; e.preventDefault(); e.stopPropagation(); cerrarMenu($(a.getAttribute("href"))); });
+$$(".menu-links span").forEach(sp => { const f = sp.textContent; sp.parentElement.addEventListener("pointerenter", () => descifrar(sp, f, 420)); });
 
 /* ================= PROCESO horizontal ================= */
 const proc = $("#proceso"), pista = $("#procPista"), procBarra = $("#procBarra"), pasos = $$("li", pista);
