@@ -25,12 +25,7 @@
 <a class="logo-mini" id="logoMini" href="#inicio" aria-label="Loseel Webs, ir al inicio"><span class="pal">loseel</span><span class="pal">webs</span></a>
 
 <header class="top">
-  <nav class="nav" aria-label="Secciones">
-    <a href="#trabajos" data-rev><span>trabajos</span></a>
-    <a href="#precios" data-rev><span>precios</span></a>
-    <a href="#sobre-mi" data-rev><span>sobre mí</span></a>
-    <a href="#contacto" data-rev><span>contacto</span></a>
-  </nav>
+  <button type="button" class="menu-b" data-menu aria-expanded="false" aria-controls="menu" aria-label="Abrir el menú"><span aria-hidden="true"><i></i><i></i></span><svg class="l-boton" viewBox="0 0 200 220" aria-hidden="true"><path class="trazo" d="M118 46 C 132 20, 160 22, 152 46 C 144 70, 104 86, 92 112 C 80 138, 70 168, 58 184 C 48 198, 30 200, 28 188 C 26 176, 44 170, 62 176 C 86 184, 110 196, 140 188 C 154 184, 164 176, 170 168"/></svg></button>
 </header>
 
 <main>
@@ -74,7 +69,7 @@
     <button type="button" class="btn halo" data-abrir="quiz"><span>¿No sabes cuál? Ayúdame a elegir</span></button>
   </div>
   <div class="planes" id="planes"></div>
-  <p class="letra-chica rv">Precios en pesos, sin IVA. Dominio aparte (entre $300 y $600 al año) y mantenimiento mensual opcional.</p>
+  <p class="letra-chica rv">Precios en pesos, sin IVA. Dominio aparte (entre $300 y $600 al año). Mantenimiento desde $250 al mes; el panel requiere plan activo. Cambios fuera del plan: $350 la hora.</p>
 </section>
 
 <!-- 7 · proceso: recorrido horizontal -->
@@ -101,7 +96,7 @@
   <div class="promesas">
     <article class="tj limpia"><span class="tj-n">01</span><h3>Precio cerrado antes de empezar</h3><p>Sabes cuánto vas a pagar y qué incluye, por escrito. Sin sorpresas al final.</p></article>
     <article class="tj limpia"><span class="tj-n">02</span><h3>Respuesta en menos de 24 horas</h3><p>Si me escribes, te contesto yo, el mismo día o a más tardar al siguiente.</p></article>
-    <article class="tj limpia"><span class="tj-n">03</span><h3>Todo queda a tu nombre</h3><p>Tu contenido y tus accesos son tuyos, y el dominio puede quedar a tu nombre desde el inicio.</p></article>
+    <article class="tj limpia"><span class="tj-n">03</span><h3>Tu contenido y tu dominio son tuyos</h3><p>El panel funciona mientras tengas tu plan; si cancelas, te entrego tu página completa sin costo.</p></article>
     <article class="tj limpia"><span class="tj-n">04</span><h3>Un mes de soporte incluido</h3><p>Después de entregar, cualquier ajuste o duda del primer mes no tiene costo.</p></article>
   </div>
 </section>
@@ -138,6 +133,28 @@
 
 <div class="vista" id="vista" aria-hidden="true"><img alt=""></div>
 <div class="aviso" role="status"></div>
+<dialog class="menu" id="menu" aria-label="Menú"><div class="menu-in">
+  <div class="menu-cab"><span class="menu-logo">loseel <em>webs</em></span><button type="button" class="cerrar-m" data-cerrar aria-label="Cerrar el menú"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></button></div>
+  <nav class="menu-links" aria-label="Secciones">
+    <a href="#inicio"><span data-t="Inicio">Inicio</span></a><a href="#gana"><span data-t="Lo que gana tu negocio">Lo que gana tu negocio</span></a><a href="#trabajos"><span data-t="Trabajos">Trabajos</span></a><a href="#precios"><span data-t="Precios">Precios</span></a><a href="#proceso"><span data-t="Cómo trabajamos">Cómo trabajamos</span></a><a href="#sobre-mi"><span data-t="Sobre mí">Sobre mí</span></a><a href="#preguntas"><span data-t="Preguntas">Preguntas</span></a><a href="#contacto"><span data-t="Contacto">Contacto</span></a>
+  </nav>
+  <div class="menu-info">
+    <h3>Información útil</h3>
+    <dl>
+      <div><dt>Paquetes</dt><dd>Desde $3,500, pago único</dd></div>
+      <div><dt>Tiempo de entrega</dt><dd>De 2 a 8 semanas según el paquete</dd></div>
+      <div><dt>Dominio</dt><dd>Entre $300 y $600 al año, aparte. Puede quedar a tu nombre</dd></div>
+      <div><dt>Mantenimiento</dt><dd>Desde $250 al mes; el panel requiere plan activo</dd></div>
+      <div><dt>Cambios fuera del plan</dt><dd>$350 la hora</dd></div>
+      <div><dt>Forma de pago</dt><dd>50 % al empezar y 50 % al entregar</dd></div>
+      <div><dt>Otras ciudades</dt><dd>Trabajo a distancia, por WhatsApp o videollamada</dd></div>
+    </dl>
+  </div>
+  <div class="menu-cont">
+    <a class="btn halo" href="https://wa.me/527821237103?text=Hola%20Roberto%2C%20vi%20tu%20portafolio%20y%20me%20gustar%C3%ADa%20platicar%20sobre%20una%20p%C3%A1gina%20para%20mi%20negocio." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg><span>Escríbeme por WhatsApp</span></a>
+    <p><a href="tel:+527821237103">782 123 7103</a><br><a href="mailto:loseelwebs@gmail.com">loseelwebs@gmail.com</a><br>Respondo en menos de 24 horas</p>
+  </div>
+</div></dialog>
 <dialog class="caso" id="caso" aria-labelledby="caso-t"><div class="caso-in" id="caso-in"></div></dialog>
 <dialog class="visor" id="visor" aria-label="Imagen ampliada"><img alt=""><p></p></dialog>
 <dialog class="quiz" id="quiz" aria-label="¿Cuál paquete te conviene?"><div class="quiz-in">
