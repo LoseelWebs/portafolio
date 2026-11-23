@@ -21,7 +21,6 @@ const rango = (a, b) => b ? `${pesos(a)} – ${pesos(b)}` : `Desde ${pesos(a)}`;
 
 /* ---------- partir textos ---------- */
 function letras(el, txt) { el.innerHTML = [...txt].map(c => `<span class="le">${c === " " ? "&nbsp;" : esc(c)}</span>`).join(""); }
-$$(".nombre .pal").forEach(p => letras(p, p.textContent));
 letras($(".correo .c1"), "loseelwebs@"); letras($(".correo .c2"), "gmail.com");
 /* títulos: cada letra por separado, sin cortar palabras */
 $$("[data-tit]").forEach(t => {
@@ -30,7 +29,6 @@ $$("[data-tit]").forEach(t => {
   let i = 0; t.innerHTML = t.textContent.split(" ").map(w => `<span class="pw" aria-hidden="true">${[...w].map(c => `<span class="ch" style="--i:${i++}">${esc(c)}</span>`).join("")}</span>`).join(" ");
 });
 /* sobre mí: palabras que se pintan */
-$$(".pinta").forEach(p => { p.innerHTML = p.textContent.split(" ").map(w => `<span class="w">${esc(w)}</span>`).join(" "); });
 
 /* texto que se descifra */
 const SIGNOS = "abcdefghijklmnñopqrstuvwxyz#%&*/<>";
@@ -57,67 +55,55 @@ if (!QUIETO && FINO && !LIGERO && window.Lenis) {
 }
 $$("dialog").forEach(d => d.setAttribute("data-lenis-prevent", ""));
 
-/* ================= 1 · PORTADA: partículas que arman el nombre =================
-   Al bajar, el nombre se deshace y se vuelve a armar chico arriba a la izquierda; al subir, regresa. */
-const nombre = $("#nombre"), hero = $(".hero"), capa = $("#capa"), logoMini = $("#logoMini");
+/* ================= 1 · PORTADA: aparece el nombre y la cortina azul se vuelve la barra del centro =================
+   Antes de empezar se mide dónde queda la barra azul en el logo final; la cortina se recorta hasta ese lugar. */
+const hero = $(".hero"), logoMini = $("#logoMini"), heroLogo = $("#heroLogo");
 letras($$(".pal", logoMini)[0], "loseel"); letras($$(".pal", logoMini)[1], "webs");
-let ratonX = -9999, ratonY = -9999;
-function medirLetras(cont, refTop) {
-  const mc = document.createElement("canvas").getContext("2d");
-  return $$(".le", cont).map(le => { const r = le.getBoundingClientRect(), cs = getComputedStyle(le), font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-    mc.font = font; const m = mc.measureText(le.textContent);
-    const fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
-    return { ch: le.textContent, font, x: r.left, base: r.top - refTop + (r.height - (fa + fd)) / 2 + fa, color: cs.color }; });
+{ const lo = $(".lo", heroLogo); lo.innerHTML = [...lo.textContent].map((c, i) => `<span class="le" style="--i:${i}">${c}</span>`).join(""); }
+function portada() {
+  if (QUIETO) { hero.classList.remove("pre"); return; }
+  const r = hero.getBoundingClientRect(), b = $(".barras i:nth-child(2)", heroLogo).getBoundingClientRect(), cort = $(".cortina", hero);
+  cort.style.setProperty("--bt", (b.top - r.top) + "px"); cort.style.setProperty("--bl", (b.left - r.left) + "px");
+  cort.style.setProperty("--br", (r.right - b.right) + "px"); cort.style.setProperty("--bb", (r.bottom - b.bottom) + "px");
+  cort.style.setProperty("--tira", Math.max(18, b.width * 2.2) + "px");
+  hero.classList.remove("pre"); hero.classList.add("play");
 }
-function intro() {
-  if (QUIETO || !window.crearIntro) { nombre.classList.add("ver"); capa.style.display = "none"; return; }
-  const ctx = capa.getContext("2d");
-  let W, H, dpr, off, oc, motor, itemsA, itemsB, anchoAnt = 0, caja;
-  const avance = () => cl(scrollY / (hero.offsetHeight * .55));
-  function armar() {
-    dpr = LIGERO ? 1 : Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; anchoAnt = W;
-    capa.width = W * dpr; capa.height = H * dpr; off = document.createElement("canvas"); off.width = capa.width; off.height = capa.height; oc = off.getContext("2d");
-    const hr = hero.getBoundingClientRect();
-    itemsA = medirLetras(nombre, hr.top);            /* grandes: y medida desde el inicio de la página */
-    itemsB = medirLetras(logoMini, 0);               /* chicas: fijas en la pantalla */
-    const fs0 = parseFloat(getComputedStyle($(".le", nombre)).fontSize), paso = Math.max(2, Math.round(fs0 / (LIGERO ? (W < 700 ? 24 : 32) : (W < 700 ? 34 : 56))));
-    const hH = hero.offsetHeight;
-    motor = crearIntro(W, H, puntosTexto(W, Math.max(H, hH), itemsA, paso, true), puntosTexto(W, H, itemsB, 2, true), { polvo: "rgba(10,10,10,.55)", nPolvo: LIGERO ? 60 : (W < 700 ? 140 : 260) });
-    caja = itemsA.reduce((c, it) => ({ x0: Math.min(c.x0, it.x), x1: Math.max(c.x1, it.x + 200), y0: Math.min(c.y0, it.base - 260), y1: Math.max(c.y1, it.base + 60) }), { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9 });
-  }
-  armar();
-  const t0 = performance.now(); let prox = 0, glHasta = 0, listo = false;
-  const cuadro = now => {
-    const t = (now - t0) / 1000, sy = scrollY, s = avance();
-    if (!listo && t < motor.FIN && s < .05) motor.formar(ctx, off, oc, t, dpr, sy, itemsA);
-    else {
-      if (!listo) { listo = true; if (s >= .05) motor.colocar(s, sy); }
-      if (t > prox) { glHasta = s < .5 ? t + .16 : 0; prox = t + 4 + Math.random() * 4; }
-      /* en reposo con el nombre chico y el cursor lejos, no hace falta redibujar */
-      /* solo redibuja si algo se mueve: scroll, cursor cerca, glitch o partículas en camino */
-      let cerca;
-      if (s >= 1) { const lm = logoMini.getBoundingClientRect(); cerca = ratonX > lm.left - 80 && ratonX < lm.right + 80 && ratonY < lm.bottom + 80; }
-      else cerca = ratonX > caja.x0 - 140 && ratonX < caja.x1 + 140 && ratonY + sy > caja.y0 - 140 && ratonY + sy < caja.y1 + 140;
-      const gl = t < glHasta, activo = gl || cuadro.glAnt || motor.quietud > .008 || s !== cuadro.sAnt || cerca || cuadro.forzar;
-      if (activo && (s < 1 || sy < hero.offsetHeight * 3 || cerca || s !== cuadro.sAnt || motor.quietud > .008)) { motor.vivir(ctx, off, oc, t, dpr, s, sy, ratonX, ratonY, gl, itemsA, itemsB); cuadro.forzar = false; }
-      cuadro.sAnt = s; cuadro.glAnt = gl;
-    }
-    requestAnimationFrame(cuadro);
-  };
-  requestAnimationFrame(cuadro);
-  addEventListener("pointermove", e => { ratonX = e.clientX; ratonY = e.clientY; }, { passive: true });
-  document.addEventListener("pointerleave", () => { ratonX = ratonY = -9999; });
-  addEventListener("touchend", () => setTimeout(() => { ratonX = ratonY = -9999; }, 250), { passive: true });
-  hero.addEventListener("pointerdown", e => { if (avance() < .3 && listo) motor.explotar(e.clientX, e.clientY); });
-  ajustesLigero.push(() => { armar(); listo = true; motor.colocar(avance(), scrollY); cuadro.forzar = true; });
-  let tR = 0; addEventListener("resize", () => { clearTimeout(tR); tR = setTimeout(() => { if (Math.abs(innerWidth - anchoAnt) < 40 && Math.abs(innerHeight - H) < 160) return; armar(); listo = true; motor.colocar(avance(), scrollY); cuadro.forzar = true; }, 200); });
-}
-Promise.race([document.fonts ? Promise.all([document.fonts.load("800 100px Syne"), document.fonts.load("italic 400 100px Fraunces")]).then(() => document.fonts.ready) : Promise.resolve(), new Promise(r => setTimeout(r, 1200))])
-  .then(() => requestAnimationFrame(intro));
+Promise.race([document.fonts ? Promise.all([document.fonts.load("800 100px Syne"), document.fonts.load("italic 400 100px Fraunces")]).then(() => document.fonts.ready) : Promise.resolve(), new Promise(r => setTimeout(r, 1500))])
+  .then(() => requestAnimationFrame(portada));
+/* logo chico arriba: aparece al salir de la portada; las barras se pausan cuando no se ven */
+new IntersectionObserver(([e]) => { logoMini.classList.toggle("ver", e.intersectionRatio < .4); hero.classList.toggle("fuera", !e.isIntersecting); }, { threshold: [0, .4] }).observe(hero);
 
 /* ================= 2 · FRANJA ================= */
-const marq = $("#marq"), rayas = $(".rayas");
-marq.innerHTML = `<span>loseel webs <b></b> <em>páginas web</em> <b></b> celular y computadora <b></b> <em>a tu medida</em> <b></b></span>`.repeat(4);
+const marq = $("#marq");
+/* franja: cada palabra alterna texto y cambia de estilo */
+const PAL = [["loseel webs", "roberto lópez"], ["páginas web", "a tu medida"], ["celular", "computadora"], ["diseño propio", "tu negocio"]];
+const EST = ["e0", "e1", "e2", "e3", "e4", "e5"];
+const ICO = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l15 9-7 1.6L8.6 20z" fill="currentColor"/></svg>';
+marq.innerHTML = `<span>${PAL.map((p, i) => `<s class="fpal" data-i="${i}"><i><u class="${EST[i % 6]}">${p[0]}</u></i></s>${i % 2 ? ICO : "<b></b>"}`).join("")}</span>`.repeat(4);
+const slots = PAL.map((_, i) => [...marq.querySelectorAll(`.fpal[data-i="${i}"]`)]);
+const estado = PAL.map((_, i) => ({ t: 0, e: i % 6 }));
+/* cada hueco tiene ancho fijo; la palabra se escala para caber: así nunca se mueve el resto de la franja */
+let MED = null, HUECO = null;
+function medirFranja() {
+  const u = slots[0][0].querySelector("u"), prueba = u.cloneNode(); prueba.style.cssText = "position:absolute;visibility:hidden;animation:none"; u.parentNode.appendChild(prueba);
+  MED = PAL.map(p => p.map(txt => EST.map(e => { prueba.className = e; prueba.textContent = txt; return prueba.offsetWidth; })));
+  prueba.remove();
+  HUECO = MED.map(m => Math.ceil(Math.max(...m.map(w => w[1]))));
+  slots.forEach((g, i) => g.forEach(s => { s.style.width = HUECO[i] + "px"; ponerEscala(s, i); }));
+  marq._w = marq.scrollWidth / 4;
+}
+function ponerEscala(s, i) { const st = estado[i], w = MED[i][st.t][st.e]; s.firstChild.style.transform = `translate(-50%,-50%) scale(${Math.min(1, HUECO[i] / w).toFixed(3)})`; }
+(document.fonts ? Promise.all(["800 40px Syne", "italic 400 40px Fraunces", "500 40px Outfit", "600 40px Outfit"].map(f => document.fonts.load(f))).catch(() => 0) : Promise.resolve()).then(medirFranja);
+if (document.fonts) document.fonts.addEventListener("loadingdone", () => { clearTimeout(marq._rt); marq._rt = setTimeout(medirFranja, 100); });
+addEventListener("resize", () => { clearTimeout(marq._rt); marq._rt = setTimeout(medirFranja, 250); });
+let paso = 0;
+setInterval(() => {
+  if (!MED || !enVista.get(marq) || document.hidden || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const i = paso++ % PAL.length, st = estado[i];
+  st.e = (st.e + 1 + Math.floor(Math.random() * 4)) % 6; if (paso % 2) st.t = 1 - st.t;
+  const anim = paso % 2 ? "cambiaA" : "cambiaB";
+  slots[i].forEach(s => { const n = s.firstChild.firstChild; n.className = EST[st.e] + " " + anim; n.textContent = PAL[i][st.t]; ponerEscala(s, i); });
+}, 700);
 let mX = 0, mV = 1, ultY = scrollY, rayX = 0;
 
 /* ================= 3 · SHOWREEL siempre reproduciendo ================= */
@@ -163,9 +149,9 @@ function abrirCaso(i) {
 
 /* ================= 6 · PRECIOS ================= */
 const PLANES = [
-  { nombre: "Presencia", para: "Para que te encuentren y te escriban.", min: 3500, max: 5000, tiempo: "2 a 3 semanas", mant: "$250 al mes", incl: ["Una página con hasta 5 apartados: portada, servicios o carta, horario, ubicación y contacto", "Botón de WhatsApp con mensaje listo y mapa para llegar", "Vista previa con tu logo al compartir el enlace", "Alta en Google y candado de seguridad", "Los cambios los hago yo con el mantenimiento"] },
-  { nombre: "Con panel", para: "Para cambiar precios, horarios y fotos tú mismo.", min: 6500, max: 9500, tiempo: "3 a 5 semanas", mant: "$450 al mes", rec: true, incl: ["Todo lo de Presencia", "Panel con tu usuario y contraseña, incluido mientras tengas tu plan", "Cambias textos, precios, horarios, fotos y promociones", "Historial para regresar a una versión anterior", "Una sesión para enseñarte a usarlo"] },
-  { nombre: "A la medida", para: "Reservaciones, eventos o algo especial para tu negocio.", min: 12000, max: 0, tiempo: "5 a 8 semanas", mant: "desde $650 al mes", incl: ["Todo lo de Con panel", "Un módulo hecho para tu negocio: reservaciones, citas, cartelera de eventos…", "Panel para administrarlo: confirmar, cancelar, bloquear horarios", "3 rondas de cambios durante el diseño", "Pago en tres partes"] }
+  { nombre: "Presencia", para: "Para que te encuentren y te escriban.", min: 4000, max: 6000, tiempo: "2 a 3 semanas", mant: "$300 al mes", incl: ["Una página con hasta 5 apartados: portada, servicios o carta, horario, ubicación y contacto", "Botón de WhatsApp con mensaje listo y mapa para llegar", "Vista previa con tu logo al compartir el enlace", "Alta en Google y candado de seguridad", "Los cambios los hago yo con el mantenimiento"] },
+  { nombre: "Con panel", para: "Para cambiar precios, horarios y fotos tú mismo.", min: 7500, max: 11000, tiempo: "3 a 5 semanas", mant: "$500 al mes", rec: true, incl: ["Todo lo de Presencia", "Panel con tu usuario y contraseña, incluido mientras tengas tu plan", "Cambias textos, precios, horarios, fotos y promociones", "Historial para regresar a una versión anterior", "Una sesión para enseñarte a usarlo"] },
+  { nombre: "A la medida", para: "Reservaciones, eventos o algo especial para tu negocio.", min: 14000, max: 0, tiempo: "5 a 8 semanas", mant: "desde $750 al mes", incl: ["Todo lo de Con panel", "Un módulo hecho para tu negocio: reservaciones, citas, cartelera de eventos…", "Panel para administrarlo: confirmar, cancelar, bloquear horarios", "3 rondas de cambios durante el diseño", "Pago en tres partes"] }
 ];
 $("#planes").innerHTML = PLANES.map((p, i) => `<article class="plan${p.rec ? " rec" : ""}" style="--d:${i * 140}ms">${p.rec ? `<span class="chip">El más completo para empezar</span>` : ""}
   <h3>${esc(p.nombre)}</h3><p class="para">${esc(p.para)}</p><div class="precio" data-min="${p.min}" data-max="${p.max}">${rango(p.min, p.max)}</div><p class="unico">pago único</p>
@@ -197,7 +183,7 @@ $("#quiz").addEventListener("click", e => {
 
 /* ================= 9 · PREGUNTAS ================= */
 const FAQ = [
-  ["¿Cuánto cuesta en total?", "Depende de lo que necesites: una página de presencia va de $3,500 a $5,000, una con panel de $6,500 a $9,500 y una a la medida desde $12,000. Antes de empezar te doy un precio cerrado por escrito. Aparte pagas tu dominio (entre $300 y $600 al año) y el mantenimiento mensual, desde $250. Los cambios fuera del plan cuestan $350 la hora."],
+  ["¿Cuánto cuesta en total?", "Depende de lo que necesites: una página de presencia va de $4,000 a $6,000, una con panel de $7,500 a $11,000 y una a la medida desde $14,000. Antes de empezar te doy un precio cerrado por escrito. Aparte pagas tu dominio (entre $300 y $600 al año) y el mantenimiento mensual, desde $300. Los cambios fuera del plan cuestan $400 la hora."],
   ["¿Cuánto tarda?", "Entre 2 y 8 semanas según el paquete. La mayor parte del tiempo se va en diseñar y ajustar contigo hasta que quede como quieres. Ayuda mucho que me compartas pronto tus fotos, precios y textos."],
   ["¿Qué necesito darte?", "Tu logo si tienes, fotos de tu negocio y de lo que vendes, precios, horario, dirección y tus redes. Si no tienes buenas fotos o no sabes qué escribir, te ayudo a resolverlo."],
   ["¿Puedo cambiar cosas después?", "Sí. Con el paquete Con panel cambias textos, precios, horarios y fotos tú mismo desde tu celular o computadora; el panel funciona mientras tengas tu plan de mantenimiento activo. Si tienes Presencia, me mandas el cambio por WhatsApp y lo hago yo con el mantenimiento. Secciones nuevas o cambios de diseño se cotizan aparte."],
@@ -293,8 +279,7 @@ const ob = new IntersectionObserver(es => es.forEach(e => {
   if (el.dataset.tit === "descifra") descifrar(el, el.getAttribute("aria-label"), 1100);
   if (el.classList.contains("plan")) { contar($(".precio", el)); setTimeout(() => el.classList.add("listo"), 1400); }
 }), { rootMargin: "0px 0px -12% 0px" });
-$$("[data-tit], .rv, .fila, .plan, .limpia, .faq details, .form").forEach(el => ob.observe(el));
-$$(".limpia").forEach((el, i) => el.style.setProperty("--d", (i * 140) + "ms"));
+$$("[data-tit], .fila, .plan").forEach(el => ob.observe(el));
 if (QUIETO) $$("[data-tit=descifra]").forEach(el => el.textContent = el.getAttribute("aria-label"));
 
 /* ================= MENÚ: la L cursiva se dibuja en el botón y luego se abre ================= */
@@ -337,7 +322,7 @@ const barra = $(".top"), progreso = $(".progreso i"), correoLe = $$(".correo .le
 /* cada efecto solo trabaja cuando su sección está en pantalla */
 const enVista = new Map();
 const obV = new IntersectionObserver(es => es.forEach(e => enVista.set(e.target, e.isIntersecting)), { rootMargin: "200px 0px" });
-[marq, marco, $(".pila"), proc, correo, lista, ...pintas].forEach(el => { enVista.set(el, false); obV.observe(el); });
+[marq, marco, $(".pila"), proc, lista].forEach(el => { enVista.set(el, false); obV.observe(el); });
 const visto = el => enVista.get(el);
 let reelK = -1, tFps = 0, nFps = 0, sumFps = 0, ultNow = 0;
 function bucle(now) {
@@ -353,12 +338,11 @@ function bucle(now) {
     mV += ((Math.sign(mV) || 1) - mV) * .04;
     if (visto(marq)) { const w = marq._w || (marq._w = marq.scrollWidth / 4); mX -= mV * (innerWidth < 700 ? .9 : 1.4); if (mX < -w) mX += w; if (mX > 0) mX -= w;
       marq.style.transform = `translate3d(${mX.toFixed(1)}px,0,0) skewX(${LIGERO ? 0 : cl(-dy * .25, -10, 10).toFixed(1)}deg)`;
-      rayX += mV * .6; rayas.style.backgroundPosition = `${rayX.toFixed(1)}px 0`; }
+    }
     /* showreel: se abre desde el centro (solo mientras cambia) */
     if (visto(marco)) { const r = marco.getBoundingClientRect(), k = Math.round(cl((vh - r.top) / (vh * .9)) * 200) / 200;
       if (k !== reelK) { reelK = k; const e = 1 - Math.pow(1 - k, 3);
-        marco.style.setProperty("--ci", (12 * (1 - e)).toFixed(2) + "%"); marco.style.setProperty("--cl", (22 * (1 - e)).toFixed(2) + "%");
-        marco.style.setProperty("--cr", (28 * (1 - e)).toFixed(1) + "px"); marco.style.setProperty("--vs", (1.25 - .25 * e).toFixed(3)); } }
+        marco.style.transform = `scale(${(.84 + .16 * e).toFixed(4)})`; marco.style.borderRadius = (28 * (1 - e)).toFixed(1) + "px"; } }
     /* hojas: la de atrás se encoge cuando llega la siguiente */
     if (visto($(".pila")) && dy !== 0) hojas.forEach((h, i) => { const sig = hojas[i + 1]; if (!sig) return; const a = h.getBoundingClientRect(), b = sig.getBoundingClientRect();
       const p = cl(1 - (b.top - a.top) / a.height); h.style.transform = `scale(${(1 - p * .07).toFixed(4)}) translateY(${(-p * 10).toFixed(1)}px)`; h.style.opacity = (1 - p * .35).toFixed(3); });
@@ -366,12 +350,6 @@ function bucle(now) {
     if (horizontal && visto(proc)) { const pr = proc.getBoundingClientRect(), p = cl(-pr.top / Math.max(1, proc.offsetHeight - vh));
       pista.style.transform = `translate3d(${-p * distancia}px,0,0)`; procBarra.style.transform = `scaleX(${p})`;
       const act = Math.round(p * (pasos.length - 1)); pasos.forEach((li, i) => li.classList.toggle("on", i <= act)); }
-    /* sobre mí: el texto se pinta palabra por palabra */
-    pintas.forEach(pi => { if (!visto(pi)) return; const r2 = pi.getBoundingClientRect(), p = cl((vh * .88 - r2.top) / (r2.height + vh * .3)), ws = pi._w || (pi._w = $$(".w", pi)), n = Math.round(p * ws.length);
-      if (pi._n !== n) { ws.forEach((w, i) => w.classList.toggle("on", i < n)); pi._n = n; } });
-    /* correo: las letras suben en ola */
-    if (visto(correo)) { const rc = correo.getBoundingClientRect(), pc = Math.round(cl((vh - rc.top) / (vh * .7)) * 300) / 300;
-    if (pc !== correo._p) { correo._p = pc; correoLe.forEach((le, i) => { const q = cl(pc * 1.8 - i / correoLe.length); le.style.transform = `translateY(${(1 - q) * 70}%) rotate(${(1 - q) * 12}deg)`; le.style.opacity = .15 + q * .85; }); } }
     /* vista previa y cursor */
     if (FINO && visto(lista)) { vx += (vtx - vx) * .14; vy += (vty - vy) * .14; vista.style.translate = `${vx}px ${vy}px`; vista.style.rotate = `${cl((vtx - vx) * .06, -10, 10)}deg`;
 }
@@ -381,49 +359,3 @@ function bucle(now) {
   requestAnimationFrame(bucle);
 }
 requestAnimationFrame(bucle);
-
-/* ================= FIGURA DE FONDO: nudo con glitch rojo y azul ================= */
-(function objeto() {
-  const cv = $("canvas.obj"); if (!cv) return;
-  const ctx = cv.getContext("2d"), off = document.createElement("canvas"), oc = off.getContext("2d"), TAU = Math.PI * 2;
-  let W = 0, H = 0, dpr = 1, px = 0, py = 0, falla = 0, prox = 4, vivo = true, tx = 0, ty = 0;
-  const medir = () => { dpr = 1; W = innerWidth; H = innerHeight; cv.width = off.width = W * dpr | 0; cv.height = off.height = H * dpr | 0; };
-  const rot = ([x, y, z], a, b) => { let t = y * Math.cos(a) - z * Math.sin(a); z = y * Math.sin(a) + z * Math.cos(a); y = t;
-    t = x * Math.cos(b) + z * Math.sin(b); z = -x * Math.sin(b) + z * Math.cos(b); x = t; return [x, y, z]; };
-  const NP = 140, HILOS = 6, RAD = .085, KN = .27; let impar = false;
-  const curva = u => [(Math.sin(u) + 2 * Math.sin(2 * u)) * KN, (Math.cos(u) - 2 * Math.cos(2 * u)) * KN, -Math.sin(3 * u) * KN * 1.2];
-  const BASE = Array.from({ length: NP + 1 }, (_, i) => { const u = i / NP * TAU, p = curva(u), q = curva(u + .01);
-    const T = [q[0] - p[0], q[1] - p[1], q[2] - p[2]], tl = Math.hypot(...T); T.forEach((v, j) => T[j] = v / tl);
-    let N = [T[1], -T[0], 0]; const nl = Math.hypot(...N) || 1; N = N.map(v => v / nl);
-    const B = [T[1] * N[2] - T[2] * N[1], T[2] * N[0] - T[0] * N[2], T[0] * N[1] - T[1] * N[0]]; return { u, p, N, B }; });
-  const dibujar = now => {
-    impar = !impar; if (impar && !LIGERO) { requestAnimationFrame(dibujar); return; } /* 30 cuadros por segundo bastan */
-    const t = now / 1000;
-    tx += (px - tx) * .06; ty += (py - ty) * .06;
-    const ancho = W > 900, cx3 = ancho ? W * .72 : W / 2, cy3 = H / 2 + Math.sin(t * .9) * H * .03, S = Math.min(W, H) * (ancho ? .7 : .62), sc = scrollY * .0016, ra = t * .2 + sc * .6 + ty * .9, rb = t * .28 + sc + tx * 1.1;
-    oc.setTransform(dpr, 0, 0, dpr, 0, 0); oc.clearRect(0, 0, W, H); oc.lineCap = "round"; oc.lineJoin = "round";
-    const G = [];
-    for (let h = 0; h < HILOS; h++) { const fila = [];
-      BASE.forEach(({ u, p, N, B }) => { const a = h / HILOS * TAU + u * 2 + t * .8;
-        const v = [0, 1, 2].map(j => p[j] + RAD * (Math.cos(a) * N[j] + Math.sin(a) * B[j]));
-        const [x, y, z] = rot(v, ra, rb), k = 2.8 / (2.8 + z); fila.push([cx3 + x * S * k, cy3 - y * S * k]); });
-      G.push(fila); }
-    if (!QUIETO && t > prox) { falla = .1 + Math.random() * .1; prox = t + 6 + Math.random() * 5; }
-    const g = falla > 0; falla = Math.max(0, falla - 1 / 60);
-    const dx = g ? 3 + Math.random() * 4 : 0;
-    [["rgba(255,43,94,.45)", -dx], ["rgba(60,160,255,.5)", dx], ["rgba(10,10,10,.9)", 0]].forEach(([col, o]) => {
-      if (!g && o !== 0) return;
-      oc.strokeStyle = col; oc.lineWidth = 1; oc.beginPath();
-      G.forEach(f => { oc.moveTo(f[0][0] + o, f[0][1]); for (let i = 1; i < f.length; i++) oc.lineTo(f[i][0] + o, f[i][1]); });
-      oc.stroke(); });
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
-    if (!g) ctx.drawImage(off, 0, 0);
-    else { const n = 10, h = cv.height / n;
-      for (let i = 0; i < n; i++) { const sh = Math.random() < .3 ? (Math.random() - .5) * 30 * dpr : 0; ctx.drawImage(off, 0, i * h, cv.width, h, sh, i * h, cv.width, h); } }
-    if (!QUIETO && vivo && !LIGERO) requestAnimationFrame(dibujar);
-  };
-  medir(); addEventListener("resize", () => { medir(); if (LIGERO) requestAnimationFrame(dibujar); });
-  addEventListener("pointermove", e => { px = cl((e.clientX - W / 2) / W, -1, 1); py = cl((e.clientY - H / 2) / H, -1, 1); }, { passive: true });
-  document.addEventListener("visibilitychange", () => { const v = !document.hidden; if (v && !vivo && !LIGERO) { vivo = true; requestAnimationFrame(dibujar); } vivo = v; });
-  requestAnimationFrame(dibujar);
-})();
