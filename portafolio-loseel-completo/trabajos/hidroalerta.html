@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HidroAlerta · Trabajos de Loseel</title>
+<meta name="description" content="Una estación con sensor mide el nivel del Río Cazones y una página comunitaria lo muestra en vivo, con pronóstico, qué hacer, refugios y alertas en el celular.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="author" content="Roberto López">
+<meta name="theme-color" content="#f4f3ef">
+<link rel="canonical" href="https://portafolio.loseelwebs.workers.dev/trabajos/hidroalerta.html">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_MX">
+<meta property="og:site_name" content="Loseel">
+<meta property="og:title" content="HidroAlerta · Trabajos de Loseel">
+<meta property="og:description" content="Una estación con sensor mide el nivel del Río Cazones y una página comunitaria lo muestra en vivo, con pronóstico, qué hacer, refugios y alertas en el celular.">
+<meta property="og:url" content="https://portafolio.loseelwebs.workers.dev/trabajos/hidroalerta.html">
+<meta property="og:image" content="https://portafolio.loseelwebs.workers.dev/img/hx-pc-inicio.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" href="../img/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="preload" href="../fonts/syne-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/unbounded-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/plus-jakarta-sans-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/estilo.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "CreativeWork", "name": "HidroAlerta Río Cazones", "description": "Una estación con sensor mide el nivel del Río Cazones y una página comunitaria lo muestra en vivo, con pronóstico, qué hacer, refugios y alertas en el celular.", "dateCreated": "2026", "creator": {"@type": "Person", "name": "Roberto López"}, "image": "https://portafolio.loseelwebs.workers.dev/img/hx-pc-inicio.jpg", "url": "https://portafolio.loseelwebs.workers.dev/trabajos/hidroalerta.html"}</script>
+<script src="../js/arranque.js"></script>
+</head>
+<body class="pag-caso" data-pagina="caso">
+<div class="cursor" aria-hidden="true"><svg class="c-flecha" viewBox="0 0 28 28"><path d="M4 3 L4 23 L9.5 18 L13 26 L16.5 24.5 L13 16.8 L20.5 16.5 Z"/></svg><svg class="c-mano" viewBox="0 0 28 28"><path d="M11 3.5c1.1 0 2 .9 2 2V12h.5V10c0-1.1.9-2 2-2s2 .9 2 2v2.2c.3-.8 1-1.2 1.8-1.2 1.1 0 2 .9 2 2v1c.3-.4.8-.6 1.3-.6 1 0 1.9.8 1.9 1.9V20c0 3.6-2.9 6.5-6.5 6.5h-2.5c-2 0-3.8-1-5-2.6L6 18.6c-.6-.9-.4-2.1.5-2.7.8-.5 1.8-.4 2.5.3V5.5c0-1.1.9-2 2-2z"/></svg><span>ver</span></div>
+<header class="cab">
+  <a class="logo-mini" id="logoMini" href=".././" aria-label="Loseel, ir al inicio"><span class="pal"><span class="marca">LOSEEL</span></span></a>
+  <button type="button" class="menu-b" aria-expanded="false" aria-controls="menu" aria-label="Abrir el menú"><span class="barras" aria-hidden="true"><i></i><i></i><i></i></span></button>
+</header>
+
+<main id="top">
+<section class="caso-hero s-negra">
+  <a class="volver" href="../#trabajos">← Trabajos</a>
+  <h1 data-ap><span class="linea-t"><span style="--i:0">HidroAlerta</span></span></h1>
+  <p class="frase" data-sube style="--d:.2s">Un sensor en el río y una página que le dice a la gente, en vivo, qué tan alto va el agua y qué hacer.</p>
+  <div class="meta-fila" data-sube style="--d:.3s"><div><small>Para</small><span>Proyecto escolar · IoT</span></div><div><small>Año</small><span>2026</span></div><div><small>Mi parte</small><span>Líder del Equipo Centinela · dispositivo y pruebas</span></div><div><small>Estado</small><span>En línea</span></div></div>
+  <div class="caso-portada" data-foto><img src="../img/hx-pc-inicio.jpg" alt="HidroAlerta Río Cazones, pantalla principal"></div>
+  <div class="caso-acc"><span>Las capturas muestran lecturas de ejemplo.</span><a class="btn azul mag" href="https://robertomagnat3-beep.github.io/HidroalertaRioCazones/" target="_blank" rel="noopener"><span>Visitar la página</span></a></div>
+</section>
+<section class="sec s-clara">
+  <div class="tres"><div data-sube><h2>Antes</h2><p>En octubre de 2025 el Río Cazones volvió a inundar Poza Rica, como en 1999. No había una forma sencilla de ver desde el celular cómo iba subiendo el río ni qué hacer en cada momento.</p></div><div data-sube style="--d:.08s"><h2>El reto</h2><p>Medir el río todo el tiempo con equipo económico que aguante la intemperie, y avisar a tiempo a personas que no saben de tecnología, aunque tengan datos móviles lentos.</p></div><div data-sube style="--d:.16s"><h2>Lo que hice</h2><p>Una estación con ESP32, sensor ultrasónico y módem 4G en una caja IP67 con panel solar. Manda el nivel a una base de datos y la página lo muestra con una regla limnimétrica, pronóstico de lluvia, qué hacer según el nivel, refugios y números de emergencia.</p></div></div>
+  <ul class="funcs"><li data-sube style="--d:0.00s"><b>Nivel del río en vivo</b><span>Regla limnimétrica con zonas normal, atención y crítico. La lectura se actualiza sola cada 30 segundos.</span></li><li data-sube style="--d:0.07s"><b>Pronóstico de lluvia y caudal</b><span>Lluvia por hora en Poza Rica y en la sierra, y la tendencia del río para los próximos días.</span></li><li data-sube style="--d:0.14s"><b>Qué hacer según el nivel</b><span>Acciones claras para cada nivel, con el nivel actual marcado.</span></li><li data-sube style="--d:0.00s"><b>Refugios y centros de acopio</b><span>Mapa con los lugares abiertos y el más cercano a ti. El equipo los administra desde un panel.</span></li><li data-sube style="--d:0.07s"><b>Alertas en el celular</b><span>Notificaciones cuando el río pasa a atención o crítico, y canal de Telegram. Se probaron en 6 celulares.</span></li><li data-sube style="--d:0.14s"><b>Funciona como app</b><span>Se instala en la pantalla de inicio y guarda la última lectura para verla aunque no haya internet.</span></li></ul>
+</section>
+<section class="sec s-piedra">
+  <h2 class="grande" data-ap><span class="linea-t"><span style="--i:0">Así se ve.</span></span></h2>
+  <div class="galeria"><button type="button" class="g-ancha" data-ver="../img/hx-pc-inicio.jpg" data-pie="Nivel del río en computadora" data-sube><img src="../img/hx-pc-inicio.jpg" alt="Nivel del río en computadora" loading="lazy"></button><button type="button" class="g-cel" data-ver="../img/hx-cel-inicio.jpg" data-pie="Nivel con regla limnimétrica" data-sube><img src="../img/hx-cel-inicio.jpg" alt="Nivel con regla limnimétrica" loading="lazy"></button><button type="button" class="g-cel" data-ver="../img/hx-cel-que-hacer.jpg" data-pie="Qué hacer si el río sube" data-sube><img src="../img/hx-cel-que-hacer.jpg" alt="Qué hacer si el río sube" loading="lazy"></button><button type="button" class="g-cel" data-ver="../img/hx-cel-emergencias.jpg" data-pie="Números de emergencia" data-sube><img src="../img/hx-cel-emergencias.jpg" alt="Números de emergencia" loading="lazy"></button><button type="button" class="g-cel" data-ver="../img/hx-cel-datos.jpg" data-pie="Historial del nivel" data-sube><img src="../img/hx-cel-datos.jpg" alt="Historial del nivel" loading="lazy"></button><button type="button" class="g-pc" data-ver="../img/hx-pc-que-hacer.jpg" data-pie="Acciones por nivel en computadora" data-sube><img src="../img/hx-pc-que-hacer.jpg" alt="Acciones por nivel en computadora" loading="lazy"></button><button type="button" class="g-pc" data-ver="../img/hx-pc-datos.jpg" data-pie="Datos de mediciones" data-sube><img src="../img/hx-pc-datos.jpg" alt="Datos de mediciones" loading="lazy"></button></div>
+  <div class="tec"><span>ESP32</span><span>Sensor ultrasónico</span><span>Módem 4G</span><span>Supabase</span><span>Open-Meteo</span><span>OpenStreetMap</span><span>GitHub Pages</span></div>
+</section>
+<section class="siguiente s-azul">
+  <a href="team-k1.html"><small>Siguiente proyecto</small><span class="sig-n">Team K-1</span><span class="sig-f"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-der"/></svg></span></a>
+</section>
+</main>
+
+<footer class="pie" id="pie">
+  <i class="pie-calor" aria-hidden="true"><i></i></i>
+  <div class="pie-meta">
+    <a class="pie-marca" href=".././" aria-label="Loseel, volver al inicio"><svg class="pie-barras" viewBox="0 0 40 32" aria-hidden="true"><rect x="4" y="4" width="8" height="24" rx="4" fill="currentColor"/><rect x="16" y="14" width="8" height="14" rx="4" fill="#3d9bff"/><rect x="28" y="8" width="8" height="20" rx="4" fill="currentColor" transform="rotate(6 32 28)"/></svg><span><span class="marca">LOSEEL</span></span><small>Roberto López</small></a>
+    <span class="pie-centro">Diseño y desarrollo web</span>
+  </div>
+  <div class="pie-datos">
+    <div class="pie-col"><small>WhatsApp</small><a href="https://wa.me/527821237103?text=Hola%20Roberto%2C%20vi%20tu%20portafolio%20y%20me%20gustar%C3%ADa%20platicar%20sobre%20una%20p%C3%A1gina%20para%20mi%20negocio." target="_blank" rel="noopener">782 123 7103</a><small>Correo</small><a href="mailto:loseelwebs@gmail.com">loseelwebs@gmail.com</a></div>
+    <div class="pie-col der"><small>Páginas</small><p class="pie-nav"><a href=".././#trabajos">Trabajos</a><a href="../servicios.html">Servicios</a><a href="../sobre-mi.html">Sobre mí</a><a href="../contacto.html">Contacto</a></p></div>
+  </div>
+  <div class="pie-medio">
+    <a class="btn azul" href="https://wa.me/527821237103?text=Hola%20Roberto%2C%20vi%20tu%20portafolio%20y%20quiero%20cotizar%20una%20p%C3%A1gina%20para%20mi%20negocio.%20Te%20cuento%3A" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg><span>Cotiza tu página</span></a>
+  </div>
+  <div class="pie-gigante" aria-hidden="true">
+    <div class="pie-nombre"><span class="marca">LOSEEL</span></div>
+    <div class="pie-3d"></div>
+  </div>
+  <div class="pie-bajo"><span>© 2026 Loseel · Roberto López</span></div>
+</footer>
+<dialog class="menu" id="menu" aria-label="Menú"><div class="vidrio">
+  <div class="menu-cab"><span class="menu-logo"><span class="barras" aria-hidden="true"><i></i><i></i><i></i></span><span class="marca">LOSEEL</span></span><button type="button" class="cerrar-m" data-cerrar aria-label="Cerrar el menú"><svg viewBox="0 0 24 24"><use href="#i-x"/></svg></button></div>
+  <nav class="menu-links" aria-label="Páginas"><a href=".././">Inicio</a><a href=".././#trabajos" class=actual aria-current=page>Trabajos</a><a href="../servicios.html">Servicios</a><a href="../sobre-mi.html">Sobre mí</a><a href="../contacto.html">Contacto</a></nav>
+  <div class="menu-pie">
+    <a class="btn" href="https://wa.me/527821237103?text=Hola%20Roberto%2C%20vi%20tu%20portafolio%20y%20me%20gustar%C3%ADa%20platicar%20sobre%20una%20p%C3%A1gina%20para%20mi%20negocio." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wa"/></svg><span>WhatsApp 782 123 7103</span></a>
+    <div class="menu-datos"><a href="mailto:loseelwebs@gmail.com">loseelwebs@gmail.com</a><span>México</span></div>
+  </div>
+</div></dialog>
+<div class="velo" aria-hidden="true"></div>
+<div class="aviso" role="status"></div>
+<dialog class="visor" id="visor" aria-label="Imagen ampliada"><img alt=""><p></p></dialog>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-der" viewBox="0 0 24 24"><path d="M3 12h17M14 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.2-.2-.5-.3z"/></symbol>
+</svg>
+<script src="../js/lenis.min.js"></script>
+<script src="../js/comun.js"></script>
+</body>
+</html>

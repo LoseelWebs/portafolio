@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://portafolio.loseelwebs.workers.dev/sitemap.xml
